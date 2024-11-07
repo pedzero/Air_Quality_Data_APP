@@ -21,9 +21,9 @@ class InstituteService {
     }
   }
 
-  Future<List<Institute>> fetchInstitutesByCityName(String cityName) async {
+  Future<List<Institute>> fetchInstitutesByCityId(int cityId) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/institutes/?city=$cityName'));
+      final response = await http.get(Uri.parse('$baseUrl/institutes/?cityId=$cityId'));
       
       if (response.statusCode == 200) {
         List<dynamic> jsonData = json.decode(response.body);
