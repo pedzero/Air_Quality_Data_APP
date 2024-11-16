@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/providers/city_provider.dart';
 
 class CityListScreen extends StatefulWidget {
-  const CityListScreen({Key? key}) : super(key: key);
+  const CityListScreen({super.key});
 
   @override
   _CityListScreenState createState() => _CityListScreenState();

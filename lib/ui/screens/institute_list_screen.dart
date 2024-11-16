@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/providers/institute_provider.dart';
 
 class InstituteListScreen extends StatefulWidget {
-  const InstituteListScreen({Key? key}) : super(key: key);
+  const InstituteListScreen({super.key});
 
   @override
   _InstituteListScreenState createState() => _InstituteListScreenState();
