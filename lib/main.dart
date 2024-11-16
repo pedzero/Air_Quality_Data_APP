@@ -4,39 +4,46 @@ import 'package:provider/provider.dart';
 
 import './core/providers/city_provider.dart';
 import './core/providers/institute_provider.dart';
+import './core/providers/room_provider.dart';
 import './ui/screens/city_list_screen.dart';
 import './ui/screens/institute_list_screen.dart';
+import './ui/screens/room_list_screen.dart';
 
 Future main() async {
   await dotenv.load(fileName: '.env');
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CityProvider()), 
         ChangeNotifierProvider(create: (_) => InstituteProvider()),
+        ChangeNotifierProvider(create: (_) => RoomProvider()),
       ],
       child: MaterialApp(
         title: 'Air Quality App',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: HomeScreen(),
+        home: const HomeScreen(),
       ),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Air Quality App Home'),
+        title: const Text('Air Quality App Home'),
       ),
       body: Center(
         child: Column(
@@ -46,21 +53,32 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CityListScreen()),
+                  MaterialPageRoute(builder: (context) => const CityListScreen()),
                 );
               },
-              child: Text('View Cities'),
+              child: const Text('View Cities'),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => InstituteListScreen(),
+                    builder: (context) => const InstituteListScreen(),
                   ),
                 );
               },
-              child: Text('View Institutes'),
+              child: const Text('View Institutes'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RoomListScreen(),
+                  ),
+                );
+              },
+              child: const Text('View Rooms'),
             ),
           ],
         ),
