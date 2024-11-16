@@ -3,7 +3,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 import './core/providers/city_provider.dart';
+import './core/providers/institute_provider.dart';
 import './ui/screens/city_list_screen.dart';
+import './ui/screens/institute_list_screen.dart';
 
 Future main() async {
   await dotenv.load(fileName: '.env');
@@ -15,7 +17,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => CityProvider()), // Registro do CityProvider
+        ChangeNotifierProvider(create: (_) => CityProvider()), 
+        ChangeNotifierProvider(create: (_) => InstituteProvider()),
       ],
       child: MaterialApp(
         title: 'Air Quality App',
@@ -36,14 +39,30 @@ class HomeScreen extends StatelessWidget {
         title: Text('Air Quality App Home'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CityListScreen()),
-            );
-          },
-          child: Text('View Cities'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CityListScreen()),
+                );
+              },
+              child: Text('View Cities'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => InstituteListScreen(),
+                  ),
+                );
+              },
+              child: Text('View Institutes'),
+            ),
+          ],
         ),
       ),
     );
