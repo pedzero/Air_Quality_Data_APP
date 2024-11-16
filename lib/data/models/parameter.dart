@@ -1,10 +1,10 @@
 class Parameter {
   final String name;
-  final int id;
-  final int roomId;
-  final double value;
+  int id;
+  int roomId;
+  double value;
   final bool aqiIncluded;
-  final DateTime timestamp;
+  DateTime? timestamp;
 
   Parameter({
     required this.name,
@@ -12,17 +12,20 @@ class Parameter {
     required this.roomId,
     required this.value,
     required this.aqiIncluded,
-    required this.timestamp
+    required this.timestamp,
   });
-  
+
   factory Parameter.fromJSON(Map<String, dynamic> json) {
-    return Parameter(
-      name: json['name'] as String,
-      id: json['id'] as int,
-      roomId: json['room_id'] as int,
-      value: (json['value'] as num).toDouble(),
-      aqiIncluded: json['aqi_included'] as bool,
-      timestamp: DateTime.parse(json['timestamp'] as String)
-    );
-  }
+  return Parameter(
+    name: json['name'] ?? 'Unknown',
+    id: json['id'] ?? 0,
+    roomId: json['room_id'] ?? 0,
+    value: (json['value'] as num?)?.toDouble() ?? 0.0,
+    aqiIncluded: json['aqi_included'] ?? false,
+    timestamp: json['timestamp'] != null
+        ? DateTime.parse(json['timestamp'] as String)
+        : null,
+  );
+}
+
 }
