@@ -6,12 +6,19 @@ import '../models/institute.dart';
 class InstituteService {
   final String baseUrl = dotenv.env['API_URL'].toString();
 
-  Future<Map<String, dynamic>> fetchInstituteById(int instituteId) async {
+  Future<Institute?> fetchInstituteById(int instituteId) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/institutes/?id=$instituteId'));
+      final response =
+          await http.get(Uri.parse('$baseUrl/institutes/?id=$instituteId'));
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final jsonData = json.decode(response.body);
+
+        if (jsonData.isNotEmpty) {
+          return Institute.fromJSON(jsonData);
+        } else {
+          return null;
+        }
       } else {
         throw Exception('Failed to load institute');
       }
@@ -23,7 +30,7 @@ class InstituteService {
   Future<List<Institute>> fetchInstitutes() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/institutes'));
-      
+
       if (response.statusCode == 200) {
         List<dynamic> jsonData = json.decode(response.body);
         return jsonData.map((json) => Institute.fromJSON(json)).toList();
@@ -37,8 +44,9 @@ class InstituteService {
 
   Future<List<Institute>> fetchInstitutesByCityId(int cityId) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/institutes/?cityId=$cityId'));
-      
+      final response =
+          await http.get(Uri.parse('$baseUrl/institutes/?cityId=$cityId'));
+
       if (response.statusCode == 200) {
         List<dynamic> jsonData = json.decode(response.body);
         return jsonData.map((json) => Institute.fromJSON(json)).toList();
