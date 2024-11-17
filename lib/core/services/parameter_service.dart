@@ -20,4 +20,19 @@ class ParameterService {
       throw Exception('Error fetching parameters name: $e');
     }
   }
+
+  Future<List<Parameter>> fetchParameter(int roomId, String name, [int limit = 1]) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/parameters/?roomId=$roomId&name=$name&limit=$limit'));
+      
+      if (response.statusCode == 200) {
+        List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => Parameter.fromJSON(json)).toList();
+      } else {
+        throw Exception('Failed to load parameters');
+      }
+    } catch (e) {
+      throw Exception('Error fetching parameters: $e');
+    }
+  }
 }
