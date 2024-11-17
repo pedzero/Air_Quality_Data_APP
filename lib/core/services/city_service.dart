@@ -6,6 +6,20 @@ import '../models/city.dart';
 class CityService {
   final String baseUrl = dotenv.env['API_URL'].toString();
 
+  Future<Map<String, dynamic>> fetchCityById(int cityId) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/cities/?id=$cityId'));
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to load city');
+      }
+    } catch (e) {
+      throw Exception('Error fetching city: $e');
+    }
+  }
+
   Future<List<City>> fetchCities() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/cities'));
