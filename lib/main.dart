@@ -1,3 +1,4 @@
+import 'package:air_quality_data_app/ui/screens/selection_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -79,6 +80,17 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('View Rooms'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SelectionView(),
+                  ),
+                );
+              },
+              child: const Text('View Selection'),
             ),
           ],
         ),
