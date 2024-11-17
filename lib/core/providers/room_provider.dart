@@ -10,18 +10,34 @@ class RoomProvider with ChangeNotifier {
   List<Room> get rooms => _rooms;
   bool get isLoading => _isLoading;
 
-  Future<void> fetchRooms() async {
-    _isLoading = true;
+  void _setLoading(bool value) {
+    _isLoading = value;
     notifyListeners();
+  }
+
+  Future<void> fetchRooms() async {
+    _setLoading(true);
 
     try {
       _rooms = await _roomService.fetchRooms();
     } catch (e) {
       _rooms = [];
       throw Exception('Error fetching rooms: $e');
+    } finally {
+      _setLoading(false);
     }
+  }
 
-    _isLoading = false;
-    notifyListeners();
+  Future<void> fetchRoomsByInstituteId(int instituteId) async {
+    _setLoading(true);
+
+    try {
+      _rooms = await _roomService.fetchRoomsByInstituteId(instituteId);
+    } catch (e) {
+      _rooms = [];
+      throw Exception('Error fetching rooms from institute (ID) $instituteId: $e');
+    } finally {
+      _setLoading(false);
+    }
   }
 }
