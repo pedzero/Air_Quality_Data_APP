@@ -10,18 +10,34 @@ class InstituteProvider with ChangeNotifier {
   List<Institute> get institutes => _institutes;
   bool get isLoading => _isLoading;
 
-  Future<void> fetchInstitutes() async {
-    _isLoading = true;
+  void _setLoading(bool value) {
+    _isLoading = value;
     notifyListeners();
+  }
+
+  Future<void> fetchInstitutes() async {
+    _setLoading(true);
 
     try {
       _institutes = await _instituteService.fetchInstitutes();
     } catch (e) {
       _institutes = [];
       throw Exception('Error fetching institutes: $e');
+    } finally {
+      _setLoading(false);
     }
+  }
 
-    _isLoading = false;
-    notifyListeners();
+  Future<void> fetchInstitutesByCityId(int cityId) async {
+    _setLoading(true);
+
+    try {
+      _institutes = await _instituteService.fetchInstitutesByCityId(cityId);
+    } catch (e) {
+      _institutes = [];
+      throw Exception('Error fetching institutes from city (ID) $cityId: $e');
+    } finally {
+      _setLoading(false);
+    }
   }
 }
