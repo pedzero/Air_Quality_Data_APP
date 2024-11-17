@@ -1,33 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/providers/city_provider.dart';
-import '../../core/providers/institute_provider.dart';
-import '../../core/providers/room_provider.dart';
+import '../../core/providers/selection_provider.dart';
 
-class SelectionView extends StatefulWidget {
+class SelectionView extends StatelessWidget {
   const SelectionView({super.key});
 
   @override
-  _SelectionViewState createState() => _SelectionViewState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => SelectionProvider()..fetchCities(),
+      child: const SelectionScreen(),
+    );
+  }
 }
 
-class _SelectionViewState extends State<SelectionView> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() =>
-        Provider.of<CityProvider>(context, listen: false).fetchCities());
-  }
+class SelectionScreen extends StatefulWidget {
+  const SelectionScreen({super.key});
 
+  @override
+  _SelectionScreenState createState() => _SelectionScreenState();
+}
+
+class _SelectionScreenState extends State<SelectionScreen> {
   int? selectedCityId;
   int? selectedInstituteId;
   int? selectedRoomId;
 
   @override
   Widget build(BuildContext context) {
-    final cityProvider = Provider.of<CityProvider>(context);
-    final instituteProvider = Provider.of<InstituteProvider>(context);
-    final roomProvider = Provider.of<RoomProvider>(context);
+    final provider = Provider.of<SelectionProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -44,97 +45,167 @@ class _SelectionViewState extends State<SelectionView> {
             ),
             const SizedBox(height: 16),
 
-            // city selection
-            cityProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: "Cidade"),
-                    value: selectedCityId?.toString(),
-                    items: cityProvider.cities
-                        .map((city) => DropdownMenuItem<String>(
-                              value: city.id.toString(),
-                              child: Text(city.name),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      final cityId = int.tryParse(value ?? "");
-                      if (cityId != null) {
-                        setState(() {
-                          selectedCityId = cityId;
-                          selectedInstituteId = null;
-                          selectedRoomId = null;
-                        });
-                        instituteProvider.fetchInstitutesByCityId(cityId);
-                      }
-                    },
-                  ),
-            const SizedBox(height: 16),
-
-            // institute selection
-            instituteProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: "Instituto"),
-                    value: selectedInstituteId?.toString(),
-                    items: instituteProvider.institutes
-                        .map((institute) => DropdownMenuItem<String>(
-                              value: institute.id.toString(),
-                              child: Text(institute.name),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      final instituteId = int.tryParse(value ?? "");
-                      if (instituteId != null) {
-                        setState(() {
-                          selectedInstituteId = instituteId;
-                          selectedRoomId = null;
-                        });
-                        roomProvider.fetchRoomsByInstituteId(instituteId);
-                      }
-                    },
-                  ),
-            const SizedBox(height: 16),
-
-            // room selection
-            roomProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: "Ambiente"),
-                    value: selectedRoomId?.toString(),
-                    items: roomProvider.rooms
-                        .map((room) => DropdownMenuItem<String>(
-                              value: room.id.toString(),
-                              child: Text(room.name),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
+            // city dropdown
+            DropdownButtonFormField<int>(
+              decoration: const InputDecoration(labelText: "Cidade"),
+              value: selectedCityId,
+              items: provider.cities
+                  .map((city) => DropdownMenuItem<int>(
+                        value: city.id,
+                        child: Text(city.name),
+                      ))
+                  .toList(),
+              onChanged: provider.isCityLoading
+                  ? null
+                  : (value) async {
                       setState(() {
-                        selectedRoomId = int.tryParse(value ?? "");
+                        selectedCityId = value;
+                        selectedInstituteId = null;
+                        selectedRoomId = null;
+                      });
+                      if (value != null) {
+                        await provider.fetchInstitutesByCityId(value);
+                      }
+                    },
+              isExpanded: true,
+              isDense: true,
+            ),
+            if (provider.isCityLoading)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: LinearProgressIndicator(),
+              ),
+            const SizedBox(height: 16),
+
+            // institute dropdown
+            DropdownButtonFormField<int>(
+              decoration: const InputDecoration(labelText: "Instituto"),
+              value: selectedInstituteId,
+              items: provider.institutes
+                  .map((institute) => DropdownMenuItem<int>(
+                        value: institute.id,
+                        child: Text(institute.name),
+                      ))
+                  .toList(),
+              onChanged: provider.isInstituteLoading
+                  ? null
+                  : (value) async {
+                      setState(() {
+                        selectedInstituteId = value;
+                        selectedRoomId = null;
+                      });
+                      if (value != null) {
+                        await provider.fetchRoomsByInstituteId(value);
+                      }
+                    },
+              isExpanded: true,
+              isDense: true,
+            ),
+            if (provider.isInstituteLoading)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: LinearProgressIndicator(),
+              ),
+            const SizedBox(height: 16),
+
+            // room dropdown
+            DropdownButtonFormField<int>(
+              decoration: const InputDecoration(labelText: "Ambiente"),
+              value: selectedRoomId,
+              items: provider.rooms
+                  .map((room) => DropdownMenuItem<int>(
+                        value: room.id,
+                        child: Text(room.name),
+                      ))
+                  .toList(),
+              onChanged: provider.isRoomLoading
+                  ? null
+                  : (value) {
+                      setState(() {
+                        selectedRoomId = value;
                       });
                     },
-                  ),
+              isExpanded: true,
+              isDense: true,
+            ),
+            if (provider.isRoomLoading)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: LinearProgressIndicator(),
+              ),
+            const SizedBox(height: 16),
+
+             // checkboxes
+            Row(
+              children: [
+                Checkbox(
+                  value: provider.isPinned,
+                  onChanged: provider.areSelectionsDisabled()
+                      ? null
+                      : (value) {
+                          provider.setPinned(value ?? false);
+                        },
+                ),
+                const Text("Fixar na tela inicial"),
+              ],
+            ),
+            Row(
+              children: [
+                Checkbox(
+                  value: provider.receiveAlerts,
+                  onChanged: provider.areSelectionsDisabled()
+                      ? null
+                      : (value) {
+                          provider.setReceiveAlerts(value ?? false);
+                        },
+                ),
+                const Text("Receber alertas"),
+              ],
+            ),
             const Spacer(),
 
-            // save
-            Align(
-              alignment: Alignment.bottomRight,
-              child: ElevatedButton(
-                onPressed: selectedRoomId == null
-                    ? null
-                    : () {
-                        final selectedRoom = roomProvider.rooms
-                            .firstWhere(
-                                (room) => room.id == selectedRoomId,
-                            );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                "Ambiente salvo: ${selectedRoom.name}"),
-                          ),
-                        );
-                      },
-                child: const Text("Salvar"),
-              ),
+            // buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: selectedRoomId == null
+                      ? null
+                      : () {
+                          final room = provider.rooms.firstWhere(
+                            (r) => r.id == selectedRoomId,
+                          );
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text("Detalhes do Ambiente"),
+                              content: Text("Nome: ${room.name}"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Fechar"),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                  child: const Text("Detalhes"),
+                ),
+                ElevatedButton(
+                  onPressed: selectedRoomId == null
+                      ? null
+                      : () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "Ambiente salvo: ${provider.rooms.firstWhere((room) => room.id == selectedRoomId).name}",
+                              ),
+                            ),
+                          );
+                        },
+                  child: const Text("Salvar"),
+                ),
+              ],
             ),
           ],
         ),

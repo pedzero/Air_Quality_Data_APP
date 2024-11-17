@@ -1,3 +1,4 @@
+import 'package:air_quality_data_app/core/providers/selection_provider.dart';
 import 'package:air_quality_data_app/ui/screens/selection_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CityProvider()), 
         ChangeNotifierProvider(create: (_) => InstituteProvider()),
         ChangeNotifierProvider(create: (_) => RoomProvider()),
+        ChangeNotifierProvider(create: (_) => SelectionProvider()),
       ],
       child: MaterialApp(
         title: 'Air Quality App',
