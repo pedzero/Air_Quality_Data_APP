@@ -1,4 +1,6 @@
+import 'package:air_quality_data_app/core/providers/favorites_provider.dart';
 import 'package:air_quality_data_app/core/providers/selection_provider.dart';
+import 'package:air_quality_data_app/ui/screens/favorites_view.dart';
 import 'package:air_quality_data_app/ui/screens/selection_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InstituteProvider()),
         ChangeNotifierProvider(create: (_) => RoomProvider()),
         ChangeNotifierProvider(create: (_) => SelectionProvider()),
+        ChangeNotifierProvider(create: (_) => FavoritesProvider()),
       ],
       child: MaterialApp(
         title: 'Air Quality App',
@@ -93,6 +96,17 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('View Selection'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FavoritesView(),
+                  ),
+                );
+              },
+              child: const Text('View Favorites'),
             ),
           ],
         ),
