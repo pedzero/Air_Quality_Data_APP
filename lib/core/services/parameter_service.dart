@@ -27,7 +27,7 @@ class ParameterService {
       
       if (response.statusCode == 200) {
         List<dynamic> jsonData = json.decode(response.body);
-        return jsonData.map((json) => Parameter.fromJSON(json)).toList();
+        return jsonData.map((json) => Parameter.fromJSON(json)).toSet().toList();
       } else {
         throw Exception('Failed to load parameters');
       }
