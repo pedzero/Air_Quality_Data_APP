@@ -1,4 +1,4 @@
-//import 'package:air_quality_data_app/core/models/AQI.dart';
+import 'package:air_quality_data_app/core/models/aqi.dart';
 import 'package:air_quality_data_app/core/models/parameter.dart';
 
 class Room {
@@ -8,7 +8,7 @@ class Room {
   final String instituteName;
   final int cityId;
   final String cityName;
-  //final AQI aqi;
+  final AQI aqi;
   final List<Parameter> parameters;
 
   Room({
@@ -18,11 +18,14 @@ class Room {
     required this.instituteName,
     required this.cityId,
     required this.cityName,
-    //required this.aqi,
+    required this.aqi,
     required this.parameters,
   });
 
   factory Room.fromJSON(Map<String, dynamic> json) {
+    final aqiJson = json['aqi'] as Map<String, dynamic>?;
+    final parameters = json['parameters'] as List<dynamic>?;
+
     return Room(
       name: json['name'] ?? '',
       id: json['id'] ?? 0,
@@ -30,11 +33,9 @@ class Room {
       instituteName: json['institute_name'] ?? '',
       cityId: json['city_id'] ?? 0,
       cityName: json['city_name'] ?? '',
-      //aqi: AQI.fromJSON(json['aqi'] ?? {}), 
-      parameters: (json['parameters'] as List<dynamic>?)
-              ?.map((param) => Parameter.fromJSON(param))
-              .toList() ??
-          [], 
+      aqi: AQI.fromJSON(aqiJson ?? {}),
+      parameters:
+          parameters?.map((param) => Parameter.fromJSON(param)).toList() ?? [],
     );
   }
 }

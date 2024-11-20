@@ -5,9 +5,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:air_quality_data_app/core/services/city_service.dart';
 import 'package:air_quality_data_app/core/services/institute_service.dart';
 import 'package:air_quality_data_app/core/services/parameter_service.dart';
-import '../models/parameter.dart';
-//import './aqi_service.dart';
-import '../models/room.dart';
+import 'package:air_quality_data_app/core/services/aqi_service.dart';
+import 'package:air_quality_data_app/core/models/aqi.dart';
+import 'package:air_quality_data_app/core/models/parameter.dart';
+import 'package:air_quality_data_app/core/models/room.dart';
 
 class RoomService {
   final String baseUrl = dotenv.env['API_URL'].toString();
@@ -15,7 +16,7 @@ class RoomService {
   final CityService _cityService = CityService();
   final InstituteService _instituteService = InstituteService();
   final ParameterService _parameterService = ParameterService();
-  //final AQIService _aqiService = AQIService();
+  final AQIService _aqiService = AQIService();
 
   Future<Room?> fetchRoomById(int roomId) async {
     try {
@@ -75,7 +76,7 @@ class RoomService {
         throw Exception('Room not found with ID: $roomId');
       }
 
-      //final aqi = await _aqiService.fetchAQI(roomId);
+      final AQI aqi = await _aqiService.fetchAQI(roomId);
 
       final distinctParameters =
           await _parameterService.fetchParametersName(roomId);
@@ -105,7 +106,7 @@ class RoomService {
         instituteName: institute.name,
         cityId: city.id,
         cityName: city.name,
-        //aqi: aqi,
+        aqi: aqi,
         parameters: parameters,
       );
     } catch (e) {

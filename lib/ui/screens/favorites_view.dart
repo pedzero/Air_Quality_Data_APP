@@ -79,11 +79,15 @@ class FavoritesScreen extends StatelessWidget {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text("IQA"),
+                                    const Text("IQA",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        )),
                                     Text(
-                                      "to do",
+                                      _getIQACategory(room.aqi.index),
                                       style: TextStyle(
-                                        color: _getIqaColor("Bom"),
+                                        color: _getIQAColor(room.aqi.index),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -127,16 +131,37 @@ class FavoritesScreen extends StatelessWidget {
     );
   }
 
-  Color _getIqaColor(String status) {
-    switch (status) {
-      case "Bom":
+  Color _getIQAColor(int index) {
+    switch (index) {
+      case 1:
         return Colors.green;
-      case "Moderado":
+      case 2:
+        return Colors.yellow;
+      case 3:
         return Colors.orange;
-      case "Péssimo":
+      case 4:
         return Colors.red;
+      case 5:
+        return Colors.deepPurple;
       default:
         return Colors.grey;
+    }
+  }
+
+  String _getIQACategory(int index) {
+    switch (index) {
+      case 1:
+        return 'Bom';
+      case 2:
+        return 'Moderado';
+      case 3:
+        return 'Ruim';
+      case 4:
+        return 'Muito ruim';
+      case 5:
+        return 'Péssimo';
+      default:
+        return 'Desconhecido';
     }
   }
 }
