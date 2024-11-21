@@ -38,7 +38,26 @@ class FavoritesScreen extends StatelessWidget {
         ],
       ),
       body: provider.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: 2, // change to saved room number
+              itemBuilder: (context, index) {
+                return Card(
+                  elevation: 4,
+                  margin: const EdgeInsets.only(bottom: 16.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Container(
+                    height: 120,
+                    padding: const EdgeInsets.all(16.0),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                );
+              },
+            )
           : provider.favoriteRooms.isEmpty
               ? const Center(
                   child: Text("Nenhum ambiente salvo como favorito."),
@@ -54,66 +73,106 @@ class FavoritesScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              room.name,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '${room.instituteName}, ${room.cityName}',
-                              style: const TextStyle(
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text("IQA",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        )),
-                                    Text(
-                                      _getIQACategory(room.aqi.index),
-                                      style: TextStyle(
-                                        color: _getIQAColor(room.aqi.index),
-                                        fontWeight: FontWeight.bold,
+                                // stats
+                                Expanded(
+                                  flex: 65,
+                                  child: Container(
+                                    padding: const EdgeInsets.only(right: 16.0),
+                                    decoration: const BoxDecoration(
+                                      border: Border(
+                                        right: BorderSide(
+                                          color: Colors.grey,
+                                          width: 1,
+                                        ),
                                       ),
                                     ),
-                                  ],
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          room.name,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${room.instituteName}, ${room.cityName}',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          "IQA",
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          _getIQACategory(room.aqi.index),
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: _getIQAColor(room.aqi.index),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    _buildParameterRow(
-                                      Icons.thermostat,
-                                      "${room.parameters.firstWhere((parameter) => parameter.name == "Temperatura").value} °C",
+                                // main parameters
+                                Expanded(
+                                  flex: 35,
+                                  child: Container(
+                                    padding: const EdgeInsets.only(left: 16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _buildParameterRow(
+                                          Icons.thermostat,
+                                          "${room.parameters.firstWhere((parameter) => parameter.name == "Temperatura").value} °C",
+                                        ),
+                                        _buildParameterRow(
+                                          Icons.water_drop,
+                                          "${room.parameters.firstWhere((parameter) => parameter.name == "Umidade").value}%",
+                                        ),
+                                        _buildParameterRow(
+                                          Icons.co2,
+                                          "${room.parameters.firstWhere((parameter) => parameter.name == "CO2").value} ppm",
+                                        ),
+                                      ],
                                     ),
-                                    _buildParameterRow(
-                                      Icons.water_drop,
-                                      "${room.parameters.firstWhere((parameter) => parameter.name == "Umidade").value}%",
-                                    ),
-                                    _buildParameterRow(
-                                      Icons.co2,
-                                      "${room.parameters.firstWhere((parameter) => parameter.name == "CO2").value} ppm",
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                          // colorful bar
+                          ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft:
+                                  Radius.circular(12), 
+                              bottomRight:
+                                  Radius.circular(12), 
+                            ),
+                            child: Container(
+                              height: 8, 
+                              color: _getIQAColor(
+                                  room.aqi.index), 
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -122,12 +181,21 @@ class FavoritesScreen extends StatelessWidget {
   }
 
   Widget _buildParameterRow(IconData icon, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey),
-        const SizedBox(width: 4),
-        Text(value, style: const TextStyle(fontSize: 14)),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey),
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
