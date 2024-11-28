@@ -9,9 +9,9 @@ import 'package:air_quality_data_app/core/providers/city_provider.dart';
 import 'package:air_quality_data_app/core/providers/institute_provider.dart';
 import 'package:air_quality_data_app/core/providers/room_provider.dart';
 
-import 'package:air_quality_data_app/ui/screens/city_list_screen.dart';
-import 'package:air_quality_data_app/ui/screens/institute_list_screen.dart';
-import 'package:air_quality_data_app/ui/screens/room_list_screen.dart';
+//import 'package:air_quality_data_app/ui/screens/city_list_screen.dart';
+//import 'package:air_quality_data_app/ui/screens/institute_list_screen.dart';
+//import 'package:air_quality_data_app/ui/screens/room_list_screen.dart';
 import 'package:air_quality_data_app/ui/screens/details_view.dart';
 import 'package:air_quality_data_app/ui/screens/favorites_view.dart';
 import 'package:air_quality_data_app/ui/screens/selection_view.dart';

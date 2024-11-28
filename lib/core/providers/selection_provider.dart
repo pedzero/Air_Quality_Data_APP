@@ -1,3 +1,4 @@
+import 'package:air_quality_data_app/core/services/preferences_service.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/city_service.dart';
 import '../../core/services/institute_service.dart';
@@ -7,6 +8,8 @@ import '../../core/models/institute.dart';
 import '../../core/models/room.dart';
 
 class SelectionProvider with ChangeNotifier {
+  final _preferencesService = PreferencesService();
+
   final CityService _cityService = CityService();
   final InstituteService _instituteService = InstituteService();
   final RoomService _roomService = RoomService();
@@ -26,19 +29,6 @@ class SelectionProvider with ChangeNotifier {
   bool get isCityLoading => _isCityLoading;
   bool get isInstituteLoading => _isInstituteLoading;
   bool get isRoomLoading => _isRoomLoading;
-
-  bool isPinned = false;
-  bool receiveAlerts = false;
-
-  void setPinned(bool value) {
-    isPinned = value;
-    notifyListeners();
-  }
-
-  void setReceiveAlerts(bool value) {
-    receiveAlerts = value;
-    notifyListeners();
-  }
 
   void setCityLoading(bool value) {
     _isCityLoading = value;
@@ -61,7 +51,7 @@ class SelectionProvider with ChangeNotifier {
 
   Future<void> fetchCities() async {
     setCityLoading(true);
-    
+
     try {
       _cities = await _cityService.fetchCities();
     } catch (e) {
@@ -79,7 +69,7 @@ class SelectionProvider with ChangeNotifier {
     } catch (e) {
       _institutes = [];
     } finally {
-     setInstituteLoading(false);
+      setInstituteLoading(false);
     }
   }
 
@@ -91,7 +81,33 @@ class SelectionProvider with ChangeNotifier {
     } catch (e) {
       _rooms = [];
     } finally {
-     setRoomLoading(false);
+      setRoomLoading(false);
     }
+  }
+
+  Future<bool> isPinnedForRoom(int roomId) async {
+    return await _preferencesService.getPinnedStatusForRoom(roomId);
+  }
+
+  Future<bool> receiveAlertsForRoom(int roomId) async {
+    return await _preferencesService.getNotificationForRoom(roomId);
+  }
+
+  Future<void> setPinnedForRoom(int roomId, bool value) async {
+    if (value) {
+      await _preferencesService.addFavoriteRoom(roomId);
+    } else {
+      await _preferencesService.removeFavoriteRoom(roomId);
+    }
+    notifyListeners();
+  }
+
+  Future<void> setNotificationForRoom(int roomId, bool value) async {
+    if (value) {
+      await _preferencesService.addNotificationRoom(roomId);
+    } else {
+      await _preferencesService.removeNotificationRoom(roomId);
+    }
+    notifyListeners();
   }
 }

@@ -139,30 +139,65 @@ class _SelectionScreenState extends State<SelectionScreen> {
             // checkboxes
             Row(
               children: [
-                Checkbox(
-                  value: provider.isPinned,
-                  onChanged: provider.areSelectionsDisabled()
-                      ? null
-                      : (value) {
-                          provider.setPinned(value ?? false);
-                        },
+                FutureBuilder<bool>(
+                  future: selectedRoomId != null
+                      ? provider.isPinnedForRoom(selectedRoomId!)
+                      : Future.value(false),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+                    if (snapshot.hasError) {
+                      return const Text('Erro ao carregar preferências');
+                    }
+
+                    return Checkbox(
+                      value: snapshot.data ?? false,
+                      onChanged: selectedRoomId == null
+                          ? null
+                          : (value) {
+                              if (value != null) {
+                                provider.setPinnedForRoom(
+                                    selectedRoomId!, value);
+                              }
+                            },
+                    );
+                  },
                 ),
                 const Text("Fixar na tela inicial"),
               ],
             ),
             Row(
               children: [
-                Checkbox(
-                  value: provider.receiveAlerts,
-                  onChanged: provider.areSelectionsDisabled()
-                      ? null
-                      : (value) {
-                          provider.setReceiveAlerts(value ?? false);
-                        },
+                FutureBuilder<bool>(
+                  future: selectedRoomId != null
+                      ? provider.receiveAlertsForRoom(selectedRoomId!)
+                      : Future.value(false),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+                    if (snapshot.hasError) {
+                      return const Text('Erro ao carregar preferências');
+                    }
+
+                    return Checkbox(
+                      value: snapshot.data ?? false,
+                      onChanged: selectedRoomId == null
+                          ? null
+                          : (value) {
+                              if (value != null) {
+                                provider.setNotificationForRoom(
+                                    selectedRoomId!, value);
+                              }
+                            },
+                    );
+                  },
                 ),
                 const Text("Receber alertas"),
               ],
             ),
+
             const Spacer(),
 
             // buttons
