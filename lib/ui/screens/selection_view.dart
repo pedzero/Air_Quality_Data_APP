@@ -1,3 +1,4 @@
+import 'package:air_quality_data_app/ui/screens/details_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/selection_provider.dart';
@@ -135,7 +136,7 @@ class _SelectionScreenState extends State<SelectionScreen> {
               ),
             const SizedBox(height: 16),
 
-             // checkboxes
+            // checkboxes
             Row(
               children: [
                 Checkbox(
@@ -172,20 +173,11 @@ class _SelectionScreenState extends State<SelectionScreen> {
                   onPressed: selectedRoomId == null
                       ? null
                       : () {
-                          final room = provider.rooms.firstWhere(
-                            (r) => r.id == selectedRoomId,
-                          );
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: const Text("Detalhes do Ambiente"),
-                              content: Text("Nome: ${room.name}"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("Fechar"),
-                                ),
-                              ],
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DetailsView(roomId: selectedRoomId),
                             ),
                           );
                         },

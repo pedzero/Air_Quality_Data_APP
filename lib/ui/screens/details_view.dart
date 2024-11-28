@@ -4,19 +4,23 @@ import 'package:provider/provider.dart';
 import 'package:air_quality_data_app/core/providers/favorites_provider.dart';
 
 class DetailsView extends StatelessWidget {
-  const DetailsView({super.key});
+  final roomId;
+
+  const DetailsView({super.key, this.roomId});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => FavoritesProvider()..fetchRooms(),
-      child: const DetailsScreen(),
+      child: DetailsScreen(roomId: roomId),
     );
   }
 }
 
 class DetailsScreen extends StatelessWidget {
-  const DetailsScreen({super.key});
+  final roomId;
+
+  const DetailsScreen({super.key, required this.roomId});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +37,9 @@ class DetailsScreen extends StatelessWidget {
       );
     }
 
-    final room = provider.favoriteRooms.first;
+    final room = roomId == null
+        ? provider.favoriteRooms.first
+        : provider.favoriteRooms.firstWhere((r) => r.id == roomId);
 
     return Scaffold(
       appBar: AppBar(

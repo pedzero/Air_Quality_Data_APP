@@ -58,7 +58,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
+            /*ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -88,7 +88,7 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('View Rooms'),
-            ),
+            ),*/
             ElevatedButton(
               onPressed: () {
                 Navigator.push(

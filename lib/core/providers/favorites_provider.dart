@@ -18,7 +18,7 @@ class FavoritesProvider with ChangeNotifier {
 
   Future<void> fetchRooms() async {
     setLoading(true);
-    List<int> roomsId = [1, 2];
+    List<int> roomsId = [1, 2, 3];
     try {
       _favoriteRooms = <Room>[];
       for (var id in roomsId) {
