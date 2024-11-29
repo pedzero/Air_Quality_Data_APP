@@ -22,9 +22,15 @@ class SelectionProvider with ChangeNotifier {
   bool _isInstituteLoading = false;
   bool _isRoomLoading = false;
 
+  City? _selectedCity;
+  Institute? _selectedInstitute;
+
   List<City> get cities => _cities;
   List<Institute> get institutes => _institutes;
   List<Room> get rooms => _rooms;
+
+  City? get selectedCity => _selectedCity;
+  Institute? get selectedInstitute => _selectedInstitute;
 
   bool get isCityLoading => _isCityLoading;
   bool get isInstituteLoading => _isInstituteLoading;
@@ -42,6 +48,21 @@ class SelectionProvider with ChangeNotifier {
 
   void setRoomLoading(bool value) {
     _isRoomLoading = value;
+    notifyListeners();
+  }
+
+  void setSelectedCity(City? city) {
+    _selectedCity = city;
+    notifyListeners();
+  }
+
+  void setSelectedInstitute(Institute? institute) {
+    _selectedInstitute = institute;
+    notifyListeners();
+  }
+
+  void clearRooms() {
+    _rooms.clear();
     notifyListeners();
   }
 
