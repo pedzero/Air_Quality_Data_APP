@@ -1,32 +1,34 @@
 import 'package:air_quality_data_app/core/models/parameter.dart';
+import 'package:air_quality_data_app/core/providers/details_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:air_quality_data_app/core/providers/favorites_provider.dart';
 
 class DetailsView extends StatelessWidget {
-  final roomId;
+  final int roomId;
 
-  const DetailsView({super.key, this.roomId});
+  const DetailsView({super.key, required this.roomId});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => FavoritesProvider()..fetchRooms(),
+      create: (_) => DetailsProvider()..fetchRoom(roomId),
       child: DetailsScreen(roomId: roomId),
     );
   }
 }
 
 class DetailsScreen extends StatelessWidget {
-  final roomId;
+  final int roomId;
 
   const DetailsScreen({super.key, required this.roomId});
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<FavoritesProvider>(context);
+    final provider = Provider.of<DetailsProvider>(context);
 
-    if (provider.favoriteRooms.isEmpty) {
+    final room = provider.room;
+
+    if (provider.isLoading) {
       return Scaffold(
         appBar: AppBar(
           title: const Text("Detalhes do Ambiente"),
@@ -36,10 +38,6 @@ class DetailsScreen extends StatelessWidget {
         ),
       );
     }
-
-    final room = roomId == null
-        ? provider.favoriteRooms.first
-        : provider.favoriteRooms.firstWhere((r) => r.id == roomId);
 
     return Scaffold(
       appBar: AppBar(
@@ -54,7 +52,7 @@ class DetailsScreen extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                room.name,
+                room!.name,
                 style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
