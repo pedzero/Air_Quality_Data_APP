@@ -1,5 +1,7 @@
+import 'package:air_quality_data_app/core/models/history.dart';
 import 'package:air_quality_data_app/core/models/parameter.dart';
 import 'package:air_quality_data_app/core/providers/details_provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,7 +27,6 @@ class DetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<DetailsProvider>(context);
-
     final room = provider.room;
 
     if (provider.isLoading) {
@@ -48,7 +49,7 @@ class DetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            // room name
+            // room
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -79,7 +80,10 @@ class DetailsScreen extends StatelessWidget {
             Column(
               children: room.parameters.map((param) {
                 return _buildParameterItem(
-                    param.name, param.value.toString(), _getParamUnit(param));
+                  param.name,
+                  param.value.toString(),
+                  _getParamUnit(param),
+                );
               }).toList(),
             ),
             const Divider(height: 20, thickness: 1),
@@ -89,7 +93,10 @@ class DetailsScreen extends StatelessWidget {
             Column(
               children: room.aqi.parameters.map((param) {
                 return _buildParameterItem(
-                    param.name, param.value.toStringAsPrecision(3), "µg/m³");
+                  param.name,
+                  param.value.toStringAsPrecision(3),
+                  "µg/m³",
+                );
               }).toList(),
             ),
             const SizedBox(height: 16),
@@ -106,8 +113,135 @@ class DetailsScreen extends StatelessWidget {
             ),
             const Divider(height: 20, thickness: 1),
 
-            // todo history charts
+            // title and dropdown menus
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Histórico",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Row(
+                  children: [
+                    DropdownButton<String>(
+                      value: provider.selectedParameter,
+                      items: provider.room!.parameters.map((p) {
+                        return DropdownMenuItem(
+                          value: p.name,
+                          child: Text(p.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) provider.setSelectedParameter(value);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    DropdownButton<String>(
+                      value: provider.selectedInterval,
+                      items: provider.predefinedIntervals.map((interval) {
+                        return DropdownMenuItem(
+                          value: interval,
+                          child: Text(interval),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) provider.setSelectedInterval(value);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // chart
+            provider.isLoadingChart
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : provider.historicalData.isNotEmpty
+                    ? _buildChart(provider.historicalData)
+                    : const Center(
+                        child: Text("Nenhum dado disponível"),
+                      ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChart(List<History> data) {
+    List<FlSpot> avgSpots = [];
+    List<FlSpot> maxSpots = [];
+    List<FlSpot> minSpots = [];
+
+    for (var i = 0; i < data.length; i++) {
+      final point = data[i];
+      avgSpots.add(FlSpot(i.toDouble(), point.averageValue.toDouble()));
+      maxSpots.add(FlSpot(i.toDouble(), point.maxValue.toDouble()));
+      minSpots.add(FlSpot(i.toDouble(), point.minValue.toDouble()));
+    }
+
+    return SizedBox(
+      height: 300,
+      child: LineChart(
+        LineChartData(
+          lineBarsData: [
+            LineChartBarData(
+              spots: avgSpots,
+              isCurved: true,
+              color: Colors.blue,
+              belowBarData: BarAreaData(show: false),
+              dotData: const FlDotData(show: false),
+              barWidth: 3,
+            ),
+            LineChartBarData(
+              spots: maxSpots,
+              isCurved: true,
+              color: Colors.red,
+              belowBarData: BarAreaData(show: false),
+              dotData: const FlDotData(show: false),
+              barWidth: 3,
+            ),
+            LineChartBarData(
+              spots: minSpots,
+              isCurved: true,
+              color: Colors.green,
+              belowBarData: BarAreaData(show: false),
+              dotData: const FlDotData(show: false),
+              barWidth: 3,
+            ),
+          ],
+          titlesData: FlTitlesData(
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                getTitlesWidget: (value, meta) {
+                  if (value % 2 == 0 && value.toInt() < data.length) {
+                    final date = data[value.toInt()].bucketStart;
+                    return Text(
+                      "${date.hour}:${date.minute.toString().padLeft(2, '0')}",
+                      style: const TextStyle(fontSize: 10),
+                    );
+                  }
+                  return const SizedBox();
+                },
+              ),
+            ),
+          ),
+          borderData: FlBorderData(
+            show: true,
+            border: Border.all(color: Colors.black, width: 1),
+          ),
+          gridData: const FlGridData(show: true),
         ),
       ),
     );
