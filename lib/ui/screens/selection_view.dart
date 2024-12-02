@@ -28,7 +28,7 @@ class SelectionScreen extends StatelessWidget {
         title: const Text("Seleção de Ambientes"),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -42,7 +42,7 @@ class SelectionScreen extends StatelessWidget {
                 final city = provider.cities[index];
                 provider.setSelectedCity(city);
                 provider.setSelectedInstitute(null);
-                provider.clearRooms(); 
+                provider.clearRooms();
                 provider.fetchInstitutesByCityId(city.id);
               },
             ),
@@ -51,7 +51,9 @@ class SelectionScreen extends StatelessWidget {
               context,
               label: "Selecione uma instituição",
               hint: provider.selectedInstitute?.name ?? "Instituição",
-              items: provider.institutes.map((institute) => institute.name).toList(),
+              items: provider.institutes
+                  .map((institute) => institute.name)
+                  .toList(),
               isLoading: provider.isInstituteLoading,
               onChanged: (index) {
                 final institute = provider.institutes[index];
@@ -62,12 +64,11 @@ class SelectionScreen extends StatelessWidget {
             ),
             if (provider.selectedInstitute != null) ...[
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 "Ambientes",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
             ],
             const SizedBox(height: 16),
@@ -101,12 +102,21 @@ class SelectionScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 8),
         isLoading
             ? const LinearProgressIndicator()
-            : DropdownButton<int>(
+            : DropdownButtonFormField<int>(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
                 isExpanded: true,
                 hint: Text(hint),
                 items: items
@@ -152,10 +162,9 @@ class RoomCard extends StatelessWidget {
             Expanded(
               child: Text(
                 room.name,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
             ),
             Row(
@@ -169,14 +178,18 @@ class RoomCard extends StatelessWidget {
                     }
                     return IconButton(
                       icon: Icon(
-                        snapshot.data! ? Icons.push_pin : Icons.push_pin_outlined,
-                        color: const Color.fromARGB(255, 7, 141, 146),
+                        snapshot.data! ? Icons.star : Icons.star_border,
+                        color: snapshot.data!
+                            ? Colors.amber.shade400
+                            : Colors.grey,
                       ),
                       onPressed: () {
                         provider.setPinnedForRoom(room.id, !snapshot.data!);
                         _showFeedback(
                           context,
-                          snapshot.data! ? "Removido dos favoritos" : "Salvo nos favoritos",
+                          snapshot.data!
+                              ? "Removido dos favoritos"
+                              : "Adicionado aos favoritos",
                         );
                       },
                     );
@@ -190,21 +203,29 @@ class RoomCard extends StatelessWidget {
                     }
                     return IconButton(
                       icon: Icon(
-                        snapshot.data! ? Icons.notifications : Icons.notifications_none,
-                        color: const Color.fromARGB(255, 7, 141, 146),
+                        snapshot.data!
+                            ? Icons.notifications
+                            : Icons.notifications_none,
+                        color: snapshot.data!
+                            ? const Color.fromARGB(255, 7, 141, 146)
+                            : Colors.grey,
                       ),
                       onPressed: () {
-                        provider.setNotificationForRoom(room.id, !snapshot.data!, room.name);
+                        provider.setNotificationForRoom(
+                            room.id, !snapshot.data!, room.name);
                         _showFeedback(
                           context,
-                          snapshot.data! ? "Notificações desativadas" : "Notificações ativadas",
+                          snapshot.data!
+                              ? "Notificações desativadas"
+                              : "Notificações ativadas",
                         );
                       },
                     );
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios),
+                  icon: const Icon(Icons.info_outline),
+                  color: Colors.grey,
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -226,7 +247,7 @@ class RoomCard extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(milliseconds: 800),
       ),
     );
   }
