@@ -123,9 +123,10 @@ class SelectionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setNotificationForRoom(int roomId, bool value) async {
+  Future<void> setNotificationForRoom(int roomId, bool value,
+      String roomName) async {
     if (value) {
-      await _preferencesService.addNotificationRoom(roomId);
+      await _preferencesService.addNotificationRoom(roomId, roomName);
     } else {
       await _preferencesService.removeNotificationRoom(roomId);
     }

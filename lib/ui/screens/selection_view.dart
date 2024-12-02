@@ -194,7 +194,7 @@ class RoomCard extends StatelessWidget {
                         color: const Color.fromARGB(255, 7, 141, 146),
                       ),
                       onPressed: () {
-                        provider.setNotificationForRoom(room.id, !snapshot.data!);
+                        provider.setNotificationForRoom(room.id, !snapshot.data!, room.name);
                         _showFeedback(
                           context,
                           snapshot.data! ? "Notificações desativadas" : "Notificações ativadas",
