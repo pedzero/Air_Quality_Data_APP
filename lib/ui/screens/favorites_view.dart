@@ -31,11 +31,11 @@ class FavoritesScreen extends StatelessWidget {
       appBar: AppBar(
         title: Row(
           children: [
-            /*Image.asset(
-              '../../assets/aether.png',
+            Image.asset(
+              'assets/aether.png',
               height: 32,
               width: 32,
-            ),*/
+            ),
             const SizedBox(width: 8),
             Text(
               'Aether',
