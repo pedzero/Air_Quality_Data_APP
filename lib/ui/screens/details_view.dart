@@ -362,6 +362,8 @@ class DetailsScreen extends StatelessWidget {
         return '%';
       case 'CO2':
         return 'ppm';
+      case 'Pressao':
+        return 'hPa';
       default:
         return 'index';
     }
