@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import 'package:air_quality_data_app/ui/theme.dart';
 import 'package:air_quality_data_app/core/services/notification_service.dart';
 import 'package:air_quality_data_app/core/services/workmanager_service.dart';
 import 'package:air_quality_data_app/core/providers/favorites_provider.dart';
@@ -31,11 +32,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DetailsProvider()),
       ],
       child: MaterialApp(
-        title: 'Air Quality App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: const FavoritesView(),
+      title: 'Air Quality App',
+      theme: MistySeaTheme.lightTheme, 
+      darkTheme: MistySeaTheme.darkTheme, 
+      themeMode: ThemeMode.system,
+      home: const FavoritesView(),
       ),
     );
   }
