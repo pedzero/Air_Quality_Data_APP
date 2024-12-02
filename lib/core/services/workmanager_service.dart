@@ -62,7 +62,7 @@ class WorkmanagerService {
     Workmanager().registerPeriodicTask(
       "1",
       airQualityTask,
-      frequency: const Duration(minutes: 15),
+      frequency: const Duration(minutes: 30),
     );
   }
 }
