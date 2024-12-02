@@ -14,6 +14,7 @@ Future main() async {
   await dotenv.load(fileName: '.env');
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService.initialize();
+  NotificationService.requestNotificationPermission();
   WorkmanagerService.initialize();
   WorkmanagerService.registerPeriodicTask();
 
