@@ -28,14 +28,29 @@ class FavoritesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Ambientes Favoritos"),
+        title: Row(
+          children: [
+            /*Image.asset(
+              '../../assets/aether.png',
+              height: 32,
+              width: 32,
+            ),*/
+            const SizedBox(width: 8),
+            Text(
+              'Aether',
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    fontWeight: FontWeight.normal,
+                  ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: isLoading ? null : provider.fetchRooms,
           ),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.home_work),
             onPressed: () {
               Navigator.push(
                 context,
@@ -47,160 +62,154 @@ class FavoritesScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: totalRooms,
-        itemBuilder: (context, index) {
-          if (index >= favoriteRooms.length) {
-            // Placeholder while loading
-            return Card(
-              elevation: 4,
-              margin: const EdgeInsets.only(bottom: 16.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Container(
-                height: 120,
-                padding: const EdgeInsets.all(16.0),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            );
-          } else {
-            final room = favoriteRooms[index];
-            return InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DetailsView(roomId: room.id),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ambientes Favoritos',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.normal,
                   ),
-                );
-              },
-              child: Card(
-                elevation: 4,
-                margin: const EdgeInsets.only(bottom: 16.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: totalRooms,
+                itemBuilder: (context, index) {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: index >= favoriteRooms.length
+                        ? _buildLoadingCard()
+                        : _buildRoomCard(context, favoriteRooms[index]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingCard() {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const SizedBox(
+        height: 120,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoomCard(BuildContext context, dynamic room) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailsView(roomId: room.id),
+            ),
+          );
+        },
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 65,
+                    child: Container(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          right: BorderSide(color: Colors.grey, width: 0.5),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Stats
-                          Expanded(
-                            flex: 65,
-                            child: Container(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  right: BorderSide(
-                                    color: Colors.grey,
-                                    width: 1,
-                                  ),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    room.name,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${room.instituteName}, ${room.cityName}',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const Text(
-                                    "IQA",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    _getIQACategory(room.aqi.index),
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: _getIQAColor(room.aqi.index),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          Text(
+                            room.name,
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
-                          // Main parameters
-                          Expanded(
-                            flex: 35,
-                            child: Container(
-                              padding: const EdgeInsets.only(left: 16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildParameterRow(
-                                    Icons.thermostat,
-                                    "${room.parameters.firstWhere((parameter) => parameter.name == "Temperatura").value} °C",
-                                  ),
-                                  _buildParameterRow(
-                                    Icons.water_drop,
-                                    "${room.parameters.firstWhere((parameter) => parameter.name == "Umidade").value}%",
-                                  ),
-                                  _buildParameterRow(
-                                    Icons.co2,
-                                    "${room.parameters.firstWhere((parameter) => parameter.name == "CO2").value} ppm",
-                                  ),
-                                ],
-                              ),
+                          Text(
+                            '${room.instituteName}, ${room.cityName}',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            "IQA: ${_getIQACategory(room.aqi.index)}",
+                            style: TextStyle(
+                              color: _getIQAColor(room.aqi.index),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    // Colorful bar
-                    ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(12),
-                        bottomRight: Radius.circular(12),
-                      ),
-                      child: Container(
-                        height: 8,
-                        color: _getIQAColor(room.aqi.index),
+                  ),
+                  Expanded(
+                    flex: 35,
+                    child: Container(
+                      padding: const EdgeInsets.only(left: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildParameterRow(Icons.thermostat,
+                              "${room.parameters.firstWhere((p) => p.name == "Temperatura").value} °C"),
+                          _buildParameterRow(Icons.water_drop,
+                              "${room.parameters.firstWhere((p) => p.name == "Umidade").value}%"),
+                          _buildParameterRow(Icons.co2,
+                              "${room.parameters.firstWhere((p) => p.name == "CO2").value} ppm"),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            );
-          }
-        },
+            ),
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+              child: Container(
+                height: 8,
+                color: _getIQAColor(room.aqi.index),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildParameterRow(IconData icon, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
           Icon(icon, size: 20, color: Colors.grey),
           const SizedBox(width: 8),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 16),
           ),
         ],
       ),
