@@ -70,6 +70,11 @@ class DetailsProvider with ChangeNotifier {
     } catch (e) {
       setError("Erro ao carregar os detalhes da sala: ${e.toString()}");
     } finally {
+      if (room != null) {
+        setSelectedParameter(_room!.parameters.first.name);
+        setSelectedInterval(predefinedIntervals.first);
+      }
+      
       setLoading(false);
     }
   }

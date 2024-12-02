@@ -32,7 +32,10 @@ class DetailsScreen extends StatelessWidget {
     if (provider.isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text("Detalhes do Ambiente"),
+          title: Text(
+            "Detalhes do Ambiente",
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
         ),
         body: const Center(
           child: CircularProgressIndicator(),
@@ -42,88 +45,67 @@ class DetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Detalhes do Ambiente"),
-        backgroundColor: Colors.grey.shade800,
+        title: Text(
+          "Detalhes do Ambiente",
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
             // room
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                room!.name,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
+            Text(
+              room!.name,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "${room.instituteName}, ${room.cityName}",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.grey,
-                ),
-              ),
+            Text(
+              "${room.instituteName}, ${room.cityName}",
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey,
+                  ),
             ),
             const Divider(height: 20, thickness: 1),
 
             // parameters
-            _buildSectionTitle("Parâmetros"),
+            _buildSectionTitle(context, "Parâmetros"),
             Column(
               children: room.parameters.map((param) {
-                return _buildParameterItem(
-                  param.name,
-                  param.value.toString(),
-                  _getParamUnit(param),
-                );
+                return _buildParameterItem(context, param.name,
+                    param.value.toString(), _getParamUnit(param));
               }).toList(),
             ),
             const Divider(height: 20, thickness: 1),
 
-            // aqi
-            _buildSectionTitle("Índice de Qualidade do Ar"),
+            // AQI
+            _buildSectionTitle(context, "Índice de Qualidade do Ar"),
             Column(
               children: room.aqi.parameters.map((param) {
-                return _buildParameterItem(
-                  param.name,
-                  param.value.toStringAsPrecision(3),
-                  "µg/m³",
-                );
+                return _buildParameterItem(context, param.name,
+                    param.value.toStringAsPrecision(3), "µg/m³");
               }).toList(),
             ),
             const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Geral: ${_getIQACategory(room.aqi.index)}",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
+            Text(
+              "Geral: ${_getIQACategory(room.aqi.index)}",
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const Divider(height: 20, thickness: 1),
 
-            // title and dropdown menus
+            // history
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Histórico",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 Row(
                   children: [
@@ -141,7 +123,7 @@ class DetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     DropdownButton<String>(
-                      value: provider.selectedInterval,
+                      value: provider.selectedInterval ?? provider.predefinedIntervals.first,
                       items: provider.predefinedIntervals.map((interval) {
                         return DropdownMenuItem(
                           value: interval,
@@ -164,9 +146,12 @@ class DetailsScreen extends StatelessWidget {
                     child: CircularProgressIndicator(),
                   )
                 : provider.historicalData.isNotEmpty
-                    ? _buildChart(provider.historicalData)
-                    : const Center(
-                        child: Text("Nenhum dado disponível"),
+                    ? _buildChart(context, provider.historicalData)
+                    : Center(
+                        child: Text(
+                          "Nenhum dado disponível",
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
                       ),
           ],
         ),
@@ -174,7 +159,16 @@ class DetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChart(List<History> data) {
+  Widget _buildChart(BuildContext context, List<History> data) {
+    final allValues = [
+      ...data.map((e) => e.averageValue),
+      ...data.map((e) => e.maxValue),
+      ...data.map((e) => e.minValue),
+    ];
+    final minValue = allValues.reduce((a, b) => a < b ? a : b);
+    final maxValue = allValues.reduce((a, b) => a > b ? a : b);
+    final rangePadding = (maxValue - minValue) * 0.05;
+
     List<FlSpot> avgSpots = [];
     List<FlSpot> maxSpots = [];
     List<FlSpot> minSpots = [];
@@ -186,82 +180,155 @@ class DetailsScreen extends StatelessWidget {
       minSpots.add(FlSpot(i.toDouble(), point.minValue.toDouble()));
     }
 
-    return SizedBox(
-      height: 300,
-      child: LineChart(
-        LineChartData(
-          lineBarsData: [
-            LineChartBarData(
-              spots: avgSpots,
-              isCurved: true,
-              color: Colors.blue,
-              belowBarData: BarAreaData(show: false),
-              dotData: const FlDotData(show: false),
-              barWidth: 3,
-            ),
-            LineChartBarData(
-              spots: maxSpots,
-              isCurved: true,
-              color: Colors.red,
-              belowBarData: BarAreaData(show: false),
-              dotData: const FlDotData(show: false),
-              barWidth: 3,
-            ),
-            LineChartBarData(
-              spots: minSpots,
-              isCurved: true,
-              color: Colors.green,
-              belowBarData: BarAreaData(show: false),
-              dotData: const FlDotData(show: false),
-              barWidth: 3,
-            ),
-          ],
-          titlesData: FlTitlesData(
-            leftTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 40),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 30,
-                getTitlesWidget: (value, meta) {
-                  if (value % 2 == 0 && value.toInt() < data.length) {
-                    final date = data[value.toInt()].bucketStart;
-                    return Text(
-                      "${date.hour}:${date.minute.toString().padLeft(2, '0')}",
-                      style: const TextStyle(fontSize: 10),
-                    );
-                  }
-                  return const SizedBox();
-                },
+    return Column(
+      children: [
+        Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              height: 300,
+              child: LineChart(
+                LineChartData(
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: avgSpots,
+                      isCurved: true,
+                      color: Theme.of(context).colorScheme.primary,
+                      belowBarData: BarAreaData(show: false),
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, _, __, ___) =>
+                            FlDotCirclePainter(radius: 3, color: Colors.blue),
+                      ),
+                      barWidth: 3,
+                    ),
+                    LineChartBarData(
+                      spots: maxSpots,
+                      isCurved: true,
+                      color: Colors.red,
+                      belowBarData: BarAreaData(show: false),
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, _, __, ___) =>
+                            FlDotCirclePainter(radius: 3, color: Colors.red),
+                      ),
+                      barWidth: 3,
+                    ),
+                    LineChartBarData(
+                      spots: minSpots,
+                      isCurved: true,
+                      color: Colors.green,
+                      belowBarData: BarAreaData(show: false),
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, _, __, ___) =>
+                            FlDotCirclePainter(radius: 3, color: Colors.green),
+                      ),
+                      barWidth: 3,
+                    ),
+                  ],
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toStringAsFixed(0),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          );
+                        },
+                      ),
+                    ),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          if (value.toInt() < data.length) {
+                            final timestamp = data[value.toInt()].bucketStart;
+                            final localTime = timestamp.toLocal();
+                            return Text(
+                              "${localTime.hour}:${localTime.minute.toString().padLeft(2, '0')}",
+                              style: Theme.of(context).textTheme.bodySmall,
+                            );
+                          }
+                          return const SizedBox();
+                        },
+                      ),
+                    ),
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                  ),
+                  borderData: FlBorderData(
+                    show: true,
+                    border: Border.all(color: Theme.of(context).dividerColor),
+                  ),
+                  gridData: const FlGridData(show: true),
+                  minY: minValue - rangePadding,
+                  maxY: maxValue + rangePadding,
+                ),
               ),
             ),
           ),
-          borderData: FlBorderData(
-            show: true,
-            border: Border.all(color: Colors.black, width: 1),
-          ),
-          gridData: const FlGridData(show: true),
         ),
-      ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildLegendItem(context, Colors.blue, "Média"),
+            const SizedBox(width: 16),
+            _buildLegendItem(context, Colors.red, "Máximo"),
+            const SizedBox(width: 16),
+            _buildLegendItem(context, Colors.green, "Mínimo"),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildLegendItem(BuildContext context, Color color, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
       ),
     );
   }
 
-  Widget _buildParameterItem(String name, String value, String unit) {
+  Widget _buildParameterItem(
+      BuildContext context, String name, String value, String unit) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -269,18 +336,15 @@ class DetailsScreen extends StatelessWidget {
         children: [
           Text(
             name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
           ),
           Text(
             "$value $unit",
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).hintColor,
+                ),
           ),
         ],
       ),
