@@ -1,3 +1,4 @@
+import 'package:air_quality_data_app/core/models/room.dart';
 import 'package:air_quality_data_app/ui/screens/details_view.dart';
 import 'package:air_quality_data_app/ui/screens/selection_view.dart';
 import 'package:flutter/material.dart';
@@ -109,7 +110,7 @@ class FavoritesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRoomCard(BuildContext context, dynamic room) {
+  Widget _buildRoomCard(BuildContext context, Room room) {
     return Card(
       elevation: 4,
       margin: const EdgeInsets.only(bottom: 16.0),
@@ -149,16 +150,28 @@ class FavoritesScreen extends StatelessWidget {
                           ),
                           Text(
                             '${room.instituteName}, ${room.cityName}',
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Theme.of(context).hintColor),
                           ),
                           const SizedBox(height: 16),
-                          Text(
-                            "IQA: ${_getIQACategory(room.aqi.index)}",
-                            style: TextStyle(
-                              color: _getIQAColor(room.aqi.index),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
+                          Row(
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: _getIQAColor(room.aqi.index),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "IQA: ${_getIQACategory(room.aqi.index)}",
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -171,12 +184,17 @@ class FavoritesScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildParameterRow(Icons.thermostat,
+                          _buildParameterRow(context, Icons.thermostat,
                               "${room.parameters.firstWhere((p) => p.name == "Temperatura").value} °C"),
-                          _buildParameterRow(Icons.water_drop,
+                          _buildParameterRow(context, Icons.water_drop,
                               "${room.parameters.firstWhere((p) => p.name == "Umidade").value}%"),
-                          _buildParameterRow(Icons.co2,
-                              "${room.parameters.firstWhere((p) => p.name == "CO2").value} ppm"),
+                          _buildParameterRow(
+                              context,
+                              Icons.co2,
+                              "${room.parameters.firstWhere((p) => p.name == "CO2").value} ppm",
+                              _getCO2Color(room.parameters
+                                  .firstWhere((p) => p.name == "CO2")
+                                  .value)),
                         ],
                       ),
                     ),
@@ -191,7 +209,15 @@ class FavoritesScreen extends StatelessWidget {
               ),
               child: Container(
                 height: 8,
-                color: _getIQAColor(room.aqi.index),
+                color: _isCO2WorseThanIQA(
+                        room.parameters
+                            .firstWhere((p) => p.name == "CO2")
+                            .value,
+                        room.aqi.index)
+                    ? _getCO2Color(room.parameters
+                        .firstWhere((p) => p.name == "CO2")
+                        .value)
+                    : _getIQAColor(room.aqi.index),
               ),
             ),
           ],
@@ -200,16 +226,17 @@ class FavoritesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildParameterRow(IconData icon, String value) {
+  Widget _buildParameterRow(BuildContext context, IconData icon, String value,
+      [Color iconColor = Colors.grey]) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey),
+          Icon(icon, size: 20, color: iconColor),
           const SizedBox(width: 8),
           Text(
             value,
-            style: const TextStyle(fontSize: 16),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
         ],
       ),
@@ -248,5 +275,40 @@ class FavoritesScreen extends StatelessWidget {
       default:
         return 'Desconhecido';
     }
+  }
+
+  Color _getCO2Color(double co2Value) {
+    const minCO2 = 800.0;
+    const maxCO2 = 1400.0;
+
+    co2Value = co2Value.clamp(minCO2, maxCO2);
+
+    const stops = [800, 1040, 1160, 1280, 1400];
+    const colors = [
+      Colors.green,
+      Colors.yellow,
+      Colors.orange,
+      Colors.red,
+      Colors.purple,
+    ];
+
+    for (var i = 0; i < stops.length - 1; i++) {
+      if (co2Value >= stops[i] && co2Value <= stops[i + 1]) {
+        final t = (co2Value - stops[i]) / (stops[i + 1] - stops[i]);
+        return Color.lerp(colors[i], colors[i + 1], t)!;
+      }
+    }
+
+    return colors.last;
+  }
+
+  bool _isCO2WorseThanIQA(double co2Value, int iqaIndex) {
+    const minCO2 = 800.0;
+    const maxCO2 = 1400.0;
+
+    final co2Severity = ((co2Value - minCO2) / (maxCO2 - minCO2) * 5).ceil();
+    final iqaSeverity = iqaIndex;
+
+    return co2Severity > iqaSeverity;
   }
 }
