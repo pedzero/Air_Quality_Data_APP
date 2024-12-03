@@ -32,9 +32,9 @@ class FavoritesScreen extends StatelessWidget {
         title: Row(
           children: [
             Image.asset(
-              'assets/aether.png',
-              height: 32,
-              width: 32,
+              'assets/nobg_logo_aether.png',
+              height: 24,
+              width: 24,
             ),
             const SizedBox(width: 8),
             Text(
