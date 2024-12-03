@@ -17,15 +17,42 @@ class FavoritesView extends StatelessWidget {
   }
 }
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<FavoritesProvider>(context);
     final favoriteRooms = provider.favoriteRooms;
     final isLoading = provider.isLoading;
-    final totalRooms = provider.totalFavorites;
 
     return Scaffold(
       appBar: AppBar(
@@ -50,16 +77,25 @@ class FavoritesScreen extends StatelessWidget {
             icon: const Icon(Icons.refresh),
             onPressed: isLoading ? null : provider.fetchRooms,
           ),
-          IconButton(
-            icon: const Icon(Icons.home_work),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SelectionView(),
-                ),
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: favoriteRooms.isEmpty ? _animation.value : 1.0,
+                child: child,
               );
             },
+            child: IconButton(
+              icon: const Icon(Icons.home_work),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SelectionView(),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -77,7 +113,7 @@ class FavoritesScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: totalRooms,
+                itemCount: provider.totalFavorites,
                 itemBuilder: (context, index) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
