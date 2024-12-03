@@ -188,8 +188,8 @@ class RoomCard extends StatelessWidget {
                         _showFeedback(
                           context,
                           snapshot.data!
-                              ? "Removido dos favoritos"
-                              : "Adicionado aos favoritos",
+                              ? "${room.name} removido dos favoritos"
+                              : "${room.name} adicionado aos favoritos",
                         );
                       },
                     );
@@ -216,8 +216,8 @@ class RoomCard extends StatelessWidget {
                         _showFeedback(
                           context,
                           snapshot.data!
-                              ? "Notificações desativadas"
-                              : "Notificações ativadas",
+                              ? "Notificações desativadas para ${room.name}"
+                              : "Notificações ativadas ${room.name}",
                         );
                       },
                     );
