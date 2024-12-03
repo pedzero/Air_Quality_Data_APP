@@ -10,11 +10,13 @@ import 'package:air_quality_data_app/core/providers/selection_provider.dart';
 import 'package:air_quality_data_app/core/providers/details_provider.dart';
 import 'package:air_quality_data_app/ui/screens/favorites_view.dart';
 
-Future main() async {
+Future<void> main() async {
   await dotenv.load(fileName: '.env');
   WidgetsFlutterBinding.ensureInitialized();
-  NotificationService.initialize();
-  NotificationService.requestNotificationPermission();
+
+  await NotificationService.initialize();
+  await NotificationService.requestPermissions();
+
   WorkmanagerService.initialize();
   WorkmanagerService.registerPeriodicTask();
 
@@ -33,11 +35,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DetailsProvider()),
       ],
       child: MaterialApp(
-      title: 'Air Quality App',
-      theme: MistySeaTheme.lightTheme, 
-      darkTheme: MistySeaTheme.darkTheme, 
-      themeMode: ThemeMode.system,
-      home: const FavoritesView(),
+        title: 'Aether',
+        theme: MistySeaTheme.lightTheme,
+        darkTheme: MistySeaTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        home: const FavoritesView(),
       ),
     );
   }

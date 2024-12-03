@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -12,7 +11,6 @@ const String airQualityTask = "checkAirQualityTask";
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     await dotenv.load(fileName: ".env");
-    WidgetsFlutterBinding.ensureInitialized();
 
     if (task == airQualityTask) {
       try {
@@ -63,6 +61,7 @@ class WorkmanagerService {
       "1",
       airQualityTask,
       frequency: const Duration(minutes: 30),
+      existingWorkPolicy: ExistingWorkPolicy.replace,
     );
   }
 }
