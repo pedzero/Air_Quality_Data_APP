@@ -59,7 +59,9 @@ class DetailsScreen extends StatelessWidget {
             // room
             Text(
               room!.name,
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -123,7 +125,8 @@ class DetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     DropdownButton<String>(
-                      value: provider.selectedInterval ?? provider.predefinedIntervals.first,
+                      value: provider.selectedInterval ??
+                          provider.predefinedIntervals.first,
                       items: provider.predefinedIntervals.map((interval) {
                         return DropdownMenuItem(
                           value: interval,
@@ -251,6 +254,7 @@ class DetailsScreen extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 30,
+                        interval: 4,
                         getTitlesWidget: (value, meta) {
                           if (value.toInt() < data.length) {
                             final timestamp = data[value.toInt()].bucketStart;
@@ -275,6 +279,20 @@ class DetailsScreen extends StatelessWidget {
                   gridData: const FlGridData(show: true),
                   minY: minValue - rangePadding,
                   maxY: maxValue + rangePadding,
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      tooltipRoundedRadius: 8,
+                      tooltipPadding: const EdgeInsets.all(8),
+                      getTooltipItems: (spots) => spots.map((spot) {
+                        return LineTooltipItem(
+                          spot.y.toStringAsFixed(2),
+                          Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ) ?? TextStyle(),
+                        );
+                      }).toList(),
+                    ),
+                  ),
                 ),
               ),
             ),
