@@ -29,7 +29,7 @@ void callbackDispatcher() {
                   roomId, parameterName);
               final message = generateMessage(parameterName, value);
               if (message.isNotEmpty) {
-                body += "Sala $roomName: $message\n";
+                body += "$roomName - $message\n";
               }
             }
           } catch (e) {
@@ -60,7 +60,7 @@ class WorkmanagerService {
     Workmanager().registerPeriodicTask(
       "1",
       airQualityTask,
-      frequency: const Duration(minutes: 30),
+      frequency: const Duration(minutes: 45),
       existingWorkPolicy: ExistingWorkPolicy.replace,
     );
   }
@@ -71,9 +71,9 @@ String generateMessage(String parameterName, double value) {
     "CO2": {
       "unit": "ppm",
       "levels": [
-        {"limit": 800, "severity": "Baixa"},
-        {"limit": 1000, "severity": "Alta"},
-        {"limit": 1400, "severity": "Crítica"},
+        {"limit": 900, "severity": "Baixa"},
+        {"limit": 1100, "severity": "Alta"},
+        {"limit": 1500, "severity": "Crítica"},
       ],
     },
     "CO": {
