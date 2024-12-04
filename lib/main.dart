@@ -9,6 +9,7 @@ import 'package:air_quality_data_app/core/providers/favorites_provider.dart';
 import 'package:air_quality_data_app/core/providers/selection_provider.dart';
 import 'package:air_quality_data_app/core/providers/details_provider.dart';
 import 'package:air_quality_data_app/ui/screens/favorites_view.dart';
+import 'package:air_quality_data_app/core/services/route_observer.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: '.env');
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         theme: MistySeaTheme.lightTheme,
         darkTheme: MistySeaTheme.darkTheme,
         themeMode: ThemeMode.system,
+        navigatorObservers: [routeObserver],
         home: const FavoritesView(),
       ),
     );

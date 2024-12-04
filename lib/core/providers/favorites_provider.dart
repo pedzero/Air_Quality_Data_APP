@@ -10,14 +10,48 @@ class FavoritesProvider with ChangeNotifier {
   List<Room> _favoriteRooms = [];
   int _totalFavorites = 0;
   bool _isLoading = false;
+  bool _refreshNeeded = false;
+  bool _highlightSelection = false;
 
   List<Room> get favoriteRooms => _favoriteRooms;
   int get totalFavorites => _totalFavorites;
   bool get isLoading => _isLoading;
+  bool get refreshNeeded => _refreshNeeded;
+  bool get highlightSelection => _highlightSelection;
 
   void setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  Future<void> checkUpdates() async {
+    setLoading(true);
+    final newFavoritesAmount = await getFavoritesAmount();
+    _highlightSelection = false;
+    _refreshNeeded = false;
+
+    if (newFavoritesAmount != _totalFavorites) {
+      _refreshNeeded = true;
+    }
+
+    final savedRoomIds = await _preferencesService.getFavoriteRoomIds();
+    final savedIdsSet = savedRoomIds.toSet();
+
+    final loadedRoomIds = _favoriteRooms.map((room) => room.id).toSet();
+
+    if (savedIdsSet.difference(loadedRoomIds).isNotEmpty ||
+        loadedRoomIds.difference(savedIdsSet).isNotEmpty) {
+      _refreshNeeded = true;
+    }
+
+    if (!refreshNeeded && newFavoritesAmount == 0) {
+      _highlightSelection = true;
+    }
+
+    print('refresh: $refreshNeeded');
+    print('highlig: $highlightSelection');
+
+    setLoading(false);
   }
 
   Future<int> getFavoritesAmount() async {
@@ -42,6 +76,7 @@ class FavoritesProvider with ChangeNotifier {
         // log
       }
     }
+    checkUpdates();
     setLoading(false);
   }
 }

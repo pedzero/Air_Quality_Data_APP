@@ -1,3 +1,4 @@
+import 'package:air_quality_data_app/core/services/route_observer.dart';
 import 'package:air_quality_data_app/core/models/room.dart';
 import 'package:air_quality_data_app/ui/screens/details_view.dart';
 import 'package:air_quality_data_app/ui/screens/selection_view.dart';
@@ -25,7 +26,7 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, RouteAware {
   late AnimationController _animationController;
   late Animation<double> _animation;
 
@@ -33,7 +34,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      vsync: this,
+      vsync: this, // Correct: 'this' is a TickerProvider now
       duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
 
@@ -43,8 +44,31 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Registra o widget no RouteObserver
+    final modalRoute = ModalRoute.of(context);
+    if (modalRoute is PageRoute) {
+      routeObserver.subscribe(this, modalRoute);
+    }
+  }
+
+  @override
+  void didPushNext() {
+    // Chamado ao navegar para uma nova tela
+  }
+
+  @override
+  void didPopNext() {
+    // Chamado ao retornar para esta tela
+    final provider = Provider.of<FavoritesProvider>(context, listen: false);
+    provider.checkUpdates();
+  }
+
+  @override
   void dispose() {
     _animationController.dispose();
+    routeObserver.unsubscribe(this);
     super.dispose();
   }
 
@@ -73,15 +97,24 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: isLoading ? null : provider.fetchRooms,
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: provider.refreshNeeded && !provider.isLoading ? _animation.value : 1.0,
+                child: child,
+              );
+            },
+            child: IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: isLoading ? null : provider.fetchRooms,
+            ),
           ),
           AnimatedBuilder(
             animation: _animation,
             builder: (context, child) {
               return Transform.scale(
-                scale: favoriteRooms.isEmpty ? _animation.value : 1.0,
+                scale: provider.highlightSelection && !provider.isLoading ? _animation.value : 1.0,
                 child: child,
               );
             },
@@ -99,32 +132,52 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ambientes Favoritos',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.normal,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ambientes Favoritos',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.normal,
+                      ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: provider.totalFavorites,
+                    itemBuilder: (context, index) {
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: index >= favoriteRooms.length
+                            ? _buildLoadingCard()
+                            : _buildRoomCard(context, favoriteRooms[index]),
+                      );
+                    },
                   ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: provider.totalFavorites,
-                itemBuilder: (context, index) {
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: index >= favoriteRooms.length
-                        ? _buildLoadingCard()
-                        : _buildRoomCard(context, favoriteRooms[index]),
-                  );
-                },
-              ),
-            ),
-          ],
+          );
+          await provider.fetchRooms();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: ListView.builder(
+            itemCount: provider.totalFavorites,
+            itemBuilder: (context, index) {
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: index >= favoriteRooms.length
+                    ? _buildLoadingCard()
+                    : _buildRoomCard(context, favoriteRooms[index]),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -169,7 +222,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
               child: Row(
                 children: [
                   Expanded(
-                    flex: 65,
+                    flex: 60,
                     child: Container(
                       padding: const EdgeInsets.only(right: 16.0),
                       decoration: const BoxDecoration(
@@ -214,7 +267,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                     ),
                   ),
                   Expanded(
-                    flex: 35,
+                    flex: 40,
                     child: Container(
                       padding: const EdgeInsets.only(left: 16.0),
                       child: Column(
