@@ -110,7 +110,7 @@ class DetailsScreen extends StatelessWidget {
                     _showInfoDialog(
                       context,
                       "Índice de Qualidade do Ar",
-                      "O Índice de Qualidade do Ar (AQI) é uma métrica que indica a qualidade do ar com base em vários parâmetros, como partículas em suspensão (PM2.5, PM10), dióxido de nitrogênio, entre outros.",
+                      "O Índice de Qualidade do Ar (AQI) é uma métrica que indica a qualidade do ar com base em vários parâmetros, como partículas em suspensão (PM2.5, PM10), dióxido de nitrogênio, entre outros.\n\n",
                       linkText: "Saiba mais",
                       linkUrl:
                           "https://iema.es.gov.br/qualidadedoar/indicedequalidadedoar",
