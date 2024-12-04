@@ -1,3 +1,5 @@
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:air_quality_data_app/core/models/history.dart';
 import 'package:air_quality_data_app/core/models/parameter.dart';
 import 'package:air_quality_data_app/core/providers/details_provider.dart';
@@ -73,7 +75,21 @@ class DetailsScreen extends StatelessWidget {
             const Divider(height: 20, thickness: 1),
 
             // parameters
-            _buildSectionTitle(context, "Parâmetros"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSectionTitle(context, "Parâmetros"),
+                IconButton(
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: "Informações sobre os parâmetros medidos.",
+                  onPressed: () {
+                    _showInfoDialog(context, "Parâmetros",
+                        "Aqui estão os parâmetros medidos no ambiente, como temperatura, umidade, nível de CO2, entre outros.\n\nPMx - Material Particulado\nVOC - Compostos Orgânicos Voláteis\nCO2 - Gás Carbônico");
+                  },
+                  color: Theme.of(context).hintColor,
+                ),
+              ],
+            ),
             Column(
               children: room.parameters.map((param) {
                 return _buildParameterItem(context, param.name,
@@ -83,7 +99,27 @@ class DetailsScreen extends StatelessWidget {
             const Divider(height: 20, thickness: 1),
 
             // AQI
-            _buildSectionTitle(context, "Índice de Qualidade do Ar"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSectionTitle(context, "Índice de Qualidade do Ar"),
+                IconButton(
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: "Informações sobre o Índice de Qualidade do Ar.",
+                  onPressed: () {
+                    _showInfoDialog(
+                      context,
+                      "Índice de Qualidade do Ar",
+                      "O Índice de Qualidade do Ar (AQI) é uma métrica que indica a qualidade do ar com base em vários parâmetros, como partículas em suspensão (PM2.5, PM10), dióxido de nitrogênio, entre outros.",
+                      linkText: "Saiba mais",
+                      linkUrl:
+                          "https://iema.es.gov.br/qualidadedoar/indicedequalidadedoar",
+                    );
+                  },
+                  color: Theme.of(context).hintColor,
+                ),
+              ],
+            ),
             Column(
               children: room.aqi.parameters.map((param) {
                 return _buildParameterItem(context, param.name,
@@ -159,6 +195,56 @@ class DetailsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showInfoDialog(BuildContext context, String title, String content,
+      {String? linkText, String? linkUrl}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(content),
+              if (linkText != null && linkUrl != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: GestureDetector(
+                    onTap: () async {
+                      final uri = Uri.parse(linkUrl);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Não foi possível abrir o link.')),
+                        );
+                      }
+                    },
+                    child: Text(
+                      linkText,
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Fechar"),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -287,8 +373,10 @@ class DetailsScreen extends StatelessWidget {
                         return LineTooltipItem(
                           spot.y.toStringAsFixed(2),
                           Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ) ?? TextStyle(),
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ) ??
+                              TextStyle(),
                         );
                       }).toList(),
                     ),
