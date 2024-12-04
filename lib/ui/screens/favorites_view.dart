@@ -1,4 +1,5 @@
 import 'package:air_quality_data_app/core/services/route_observer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:air_quality_data_app/core/models/room.dart';
 import 'package:air_quality_data_app/ui/screens/details_view.dart';
 import 'package:air_quality_data_app/ui/screens/selection_view.dart';
@@ -34,7 +35,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      vsync: this, // Correct: 'this' is a TickerProvider now
+      vsync: this,
       duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
 
@@ -46,7 +47,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Registra o widget no RouteObserver
     final modalRoute = ModalRoute.of(context);
     if (modalRoute is PageRoute) {
       routeObserver.subscribe(this, modalRoute);
@@ -54,13 +54,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   }
 
   @override
-  void didPushNext() {
-    // Chamado ao navegar para uma nova tela
-  }
+  void didPushNext() {}
 
   @override
   void didPopNext() {
-    // Chamado ao retornar para esta tela
     final provider = Provider.of<FavoritesProvider>(context, listen: false);
     provider.checkUpdates();
   }
@@ -97,11 +94,27 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: "Créditos",
+            onPressed: () {
+              _showInfoDialog(
+                context,
+                "Sobre",
+                "Aether é um aplicativo desenvolvido para consultar informações sobre a qualidade do ar em ambientes educacionais, com o objetivo de conscientizar sobre os riscos da má qualidade do ar à saúde. Este projeto é uma ramificação do Projeto Ares.\n\n - Créditos\nAgradeço ao Professor João Paulo de T. Gomes por ceder acesso aos sensores e pela ajuda fornecida.\n\nPedro H. Barbosa Silva\n8º BCC (2024)\n\n",
+                linkText: "Descubra mais",
+                linkUrl: "https://linktr.ee/pedzero",
+              );
+            },
+            color: Theme.of(context).hintColor,
+          ),
           AnimatedBuilder(
             animation: _animation,
             builder: (context, child) {
               return Transform.scale(
-                scale: provider.refreshNeeded && !provider.isLoading ? _animation.value : 1.0,
+                scale: provider.refreshNeeded && !provider.isLoading
+                    ? _animation.value
+                    : 1.0,
                 child: child,
               );
             },
@@ -114,7 +127,9 @@ class _FavoritesScreenState extends State<FavoritesScreen>
             animation: _animation,
             builder: (context, child) {
               return Transform.scale(
-                scale: provider.highlightSelection && !provider.isLoading ? _animation.value : 1.0,
+                scale: provider.highlightSelection && !provider.isLoading
+                    ? _animation.value
+                    : 1.0,
                 child: child,
               );
             },
@@ -329,6 +344,56 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _showInfoDialog(BuildContext context, String title, String content,
+      {String? linkText, String? linkUrl}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(content),
+              if (linkText != null && linkUrl != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: GestureDetector(
+                    onTap: () async {
+                      final uri = Uri.parse(linkUrl);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Não foi possível abrir o link.')),
+                        );
+                      }
+                    },
+                    child: Text(
+                      linkText,
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Fechar"),
+            ),
+          ],
+        );
+      },
     );
   }
 
