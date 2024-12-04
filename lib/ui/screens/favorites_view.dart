@@ -372,7 +372,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
     co2Value = co2Value.clamp(minCO2, maxCO2);
 
-    const stops = [800, 1040, 1160, 1280, 1400];
+    const stops = [800, 950, 1100, 1250, 1400];
     const colors = [
       Colors.green,
       Colors.yellow,
